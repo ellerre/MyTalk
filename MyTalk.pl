@@ -13,6 +13,7 @@
 
 
 %%%%%%%%%%
+:- ensure_loaded('./Pronto_Morphological/pronto_morph_engine.pl').
 :- ensure_loaded('./wn_s.pl').
 :- dynamic n/2.
 %%%%%%%%%%
@@ -25,11 +26,19 @@
 %%% =========
 
 main_loop :-
-	write('>> '), 				% prompt the user
-	read_sent(Words), 			% read a sentence
-	talk(Words, Reply),			% process it with TALK
-	print_reply(Reply), 		% generate a printed reply
-	main_loop. 					% pocess more sentences
+	write('>> '), 					% prompt the user
+	read_sent(Words), 				% read a sentence
+
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	morph_atoms(Words, Parsed).		% morphological analysis (Pronto tools to cite)
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	%	talk(Words, Reply),			% process it with TALK
+	%	print_reply(Reply), 		% generate a printed reply
+	%main_loop. 						% pocess more sentences
 
 
 %%% talk(Sentence, Reply)
