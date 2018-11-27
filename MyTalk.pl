@@ -28,17 +28,9 @@
 main_loop :-
 	write('>> '), 					% prompt the user
 	read_sent(Words), 				% read a sentence
-
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	morph_atoms(Words, Parsed).		% morphological analysis (Pronto tools to cite)
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	%	talk(Words, Reply),			% process it with TALK
-	%	print_reply(Reply), 		% generate a printed reply
-	%main_loop. 						% pocess more sentences
+	talk(Words, Reply),				% process it with TALK
+	print_reply(Reply), 			% generate a printed reply
+	main_loop. 						% pocess more sentences
 
 
 %%% talk(Sentence, Reply)
@@ -263,76 +255,77 @@ Typical order of and values for arguments:
 
 
 q(S => --answer(X)) -->
-	whpron, vp(finite, X^S, nogap).
+	whpron, vp(finite, X^S, nogap, _).
 q(S => --answer(X)) -->
 	whpron, sinv(S, gap(np, X)).
 q(S => --answer(yes)) -->
 	sinv(S, nogap).
 q(S => --answer(yes)) -->
 	[is],
-	np((X^S0)^S, nogap),
-	np((X^true)^exists(X,S0&true), nogap).
+	np((X^S0)^S, nogap, _),
+	np((X^true)^exists(X,S0&true), nogap, _).
 
 
 %%% 				Declarative Sentences
 
 s(S, GapInfo) -->
-		np(VP^S, nogap),
-		vp(finite, VP, GapInfo).
+		np(VP^S, nogap, Num),
+		vp(finite, VP, GapInfo, Num).
 
 
 %%% 				Inverted Sentences
 
 sinv(S, GapInfo) -->
 	aux(finite/Form, VP1^VP2),
-	np(VP2^S, nogap),
-	vp(Form, VP1, GapInfo).
+	np(VP2^S, nogap, Num),
+	vp(Form, VP1, GapInfo, Num).
 
 
 %%% 				Noun Phrases
-np(NP, nogap) -->
-		det(N2^NP), n(N1), optrel(N1^N2).
-		np(NP, nogap) --> pn(NP).
-		np((X^S)^S, gap(np, X)) --> [].
+np(NP, nogap, Num) -->
+		det(N2^NP, Num), n(N1, Num), optrel(N1^N2).
+np(NP, nogap, Num) --> pn(NP, Num).
+np(NP, nogap, Num) --> n(NP, Num).
+np((X^S)^S, gap(np, X), _) --> [].
 
 
 %%% 				Verb Phrases
 
 
-vp(Form, X^S, GapInfo) -->
-	tv(Form, X^VP),
-	np(VP^S, GapInfo).
+vp(Form, X^S, GapInfo, Num) -->
+	tv(Form, X^VP, Num),
+	np(VP^S, GapInfo, _).
 
-vp(Form, VP, nogap) -->
-	iv(Form, VP).
+vp(Form, VP, nogap, Num) -->
+	iv(Form, VP, Num).
 
-vp(Form1, VP2, GapInfo) -->
+vp(Form1, VP2, GapInfo, Num) -->
 	aux(Form1/Form2, VP1^VP2),
-	vp(Form2, VP1, GapInfo).
+	vp(Form2, VP1, GapInfo, Num).
 
-vp(Form1, VP2, GapInfo) -->
+vp(Form1, VP2, GapInfo, Num) -->
 	rov(Form1/Form2, NP^VP1^VP2),
-	np(NP, GapInfo),
-	vp(Form2, VP1, nogap).
+	np(NP, GapInfo, Num),
+	vp(Form2, VP1, nogap, Num).
 
-vp(Form2, VP2, GapInfo) -->
+vp(Form2, VP2, GapInfo, Num) -->
 	rov(Form1/Form2, NP^VP1^VP2),
-	np(NP, nogap),
-	vp(Form1, VP1, GapInfo).
+	np(NP, nogap, Num),
+	vp(Form1, VP1, GapInfo, Num).
 
-vp(finite, X^S, GapInfo) -->
+vp(finite, X^S, GapInfo, sg) -->
 	[is],
-	np((X^P)^exists(X,S&P), GapInfo).
+	np((X^P)^exists(X,S&P), GapInfo, _).
 
 
 
 %%% 				Relative Clauses
 
 optrel((X^S1)^(X^(S1&S2))) -->
-	relpron, vp(finite,X^S2, nogap).
+	relpron, vp(finite,X^S2, nogap, _).
 
 optrel((X^S1)^(X^(S1&S2))) -->
-	relpron, s(S2, gap(np, X)).
+	relpron, s(S2, gap(np, X), _).
 	optrel(N^N) --> [].
 
 
@@ -346,9 +339,9 @@ optrel((X^S1)^(X^(S1&S2))) -->
 Preterminals
 -----------------------------------------------------*/
 
-det(LF) --> [D], {det(D, LF)}.
-n(LF) --> [N], {n(N, LF)}.
-pn((E^S)^S) --> [PN], {pn(PN, E)}.
+det(LF, Num) --> [D], {det(D, LF, Num)}.
+n(LF, Num) --> [N], {n(N, LF, Num)}.
+pn((E^S)^S, Num) --> [PN], {pn(PN, E, Num)}.
 aux(Form, LF) --> [Aux], {aux(Aux, Form, LF)}.
 relpron --> [RP], {relpron(RP)}.
 whpron --> [WH], {whpron(WH)}.
@@ -363,16 +356,16 @@ whpron --> [WH], {whpron(WH)}.
 % 	6. logical form of the verb
 
 
-iv(nonfinite, LF) --> [IV], {iv(IV, _, _, _, _, LF)}.
-iv(finite, LF) --> [IV], {iv(_, IV, _, _, _, LF)}.
-iv(finite, LF) --> [IV], {iv(_, _, IV, _, _, LF)}.
-iv(past_participle, LF) --> [IV], {iv(_, _, _, IV, _, LF)}.
-iv(pres_participle, LF) --> [IV], {iv(_, _, _, _, IV, LF)}.
-tv(nonfinite, LF) --> [TV], {tv(TV, _, _, _, _, LF)}.
-tv(finite, LF) --> [TV], {tv(_, TV, _, _, _, LF)}.
-tv(finite, LF) --> [TV], {tv(_, _, TV, _, _, LF)}.
-tv(past_participle, LF) --> [TV], {tv(_, _, _, TV, _, LF)}.
-tv(pres_participle, LF) --> [TV], {tv(_, _, _, _, TV, LF)}.
+iv(nonfinite, LF, Num) --> [IV], {iv(IV, _, _, _, _, LF, Num)}.
+iv(finite, LF, Num) --> [IV], {iv(_, IV, _, _, _, LF, Num)}.
+iv(finite, LF, Num) --> [IV], {iv(_, _, IV, _, _, LF, Num)}.
+iv(past_participle, LF, Num) --> [IV], {iv(_, _, _, IV, _, LF, Num)}.
+iv(pres_participle, LF, Num) --> [IV], {iv(_, _, _, _, IV, LF, Num)}.
+tv(nonfinite, LF, Num) --> [TV], {tv(TV, _, _, _, _, LF, Num)}.
+tv(finite, LF, Num) --> [TV], {tv(_, TV, _, _, _, LF, Num)}.
+tv(finite, LF, Num) --> [TV], {tv(_, _, TV, _, _, LF, Num)}.
+tv(past_participle, LF, Num) --> [TV], {tv(_, _, _, TV, _, LF, Num)}.
+tv(pres_participle, LF, Num) --> [TV], {tv(_, _, _, _, TV, LF, Num)}.
 
 rov(nonfinite /Requires, LF)
 		--> [ROV], {rov(ROV, _, _, _, _, LF, Requires)}.
@@ -399,43 +392,59 @@ whpron( who ).
 whpron( whom ).
 whpron( what ).
 
-det( every, (X^S1)^(X^S2)^ all(X,S1=>S2) ).
-det( a, (X^S1)^(X^S2)^exists(X,S1&S2) ).
-det( some, (X^S1)^(X^S2)^exists(X,S1&S2) ).
+det( every, (X^S1)^(X^S2)^ all(X,S1=>S2), sg ).
+det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
+det( some, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
+det( some, (X^S1)^(X^S2)^exists(X,S1&S2), pl ).
 
-
-n(W, Q):- s(_,_,W,_,_,_), create_n(W, Q), assert(n( W, Q)).
+n(Word, Q, Num):- word(Word, Num, W), create_n(W, Q), assert(n( W, Q)).
 create_n(W, X^ --Term):- Term =.. [W, X].
  
-		/*
-		n( author, X^ --author(X) ).
-		n( book, X^ --book(X) ).
-		n( professor, X^ --professor(X) ).
-		n( program, X^ --program(X) ).
-		n( programmer, X^ --programmer(X) ).
-		n( student, X^ --student(X) ).
-		*/
+word(Word, pl, W) :-
+   morph_atoms(Word,[[W,-es]]),
+   s(_,_,W,n,_,_)
+   ;
+   fail.
 
-pn( begriffsschrift, begriffsschrift ).
-pn( bertrand, bertrand ).
-pn( bill, bill ).
-pn( gottlob, gottlob ).
-pn( lunar, lunar ).
-pn( principia, principia ).
-pn( shrdlu, shrdlu ).
-pn( terry, terry ).
+word(Word, pl, W) :-
+   morph_atoms(Word,[[W,-s]]),
+   s(_,_,W,n,_,_)
+   ;
+   fail.
+
+word(Word, pl, W) :-
+   morph_atoms(Word,[[W,-pl]]),
+   s(_,_,W,n,_,_)
+   ;
+   fail.
+
+
+word(Word, sg, W) :-
+   morph_atoms(Word,[[W]]),
+   s(_,_,W,n,_,_)
+   ;
+   fail.
+
+pn( begriffsschrift, begriffsschrift, sg ).
+pn( bertrand, bertrand, sg ).
+pn( bill, bill, sg ).
+pn( gottlob, gottlob, sg ).
+pn( lunar, lunar, sg ).
+pn( principia, principia, sg ).
+pn( shrdlu, shrdlu, sg ).
+pn( terry, terry, sg ).
 
 iv( halt, halts, halted,
-	halted, halting, X^ --halt(X) ).
+	halted, halting, X^ --halt(X), sg ).
 
 tv( write, writes, wrote,
-	written, writing, X^Y^ --writes(X,Y) ).
+	written, writing, X^Y^ --writes(X,Y), sg ).
 tv( meet, meets, met,
-	met, meeting, X^Y^ --meets(X,Y) ).
+	met, meeting, X^Y^ --meets(X,Y), sg ).
 tv( concern, concerns, concerned,
-	concerned, concerning, X^Y^ --concerns(X,Y) ).
+	concerned, concerning, X^Y^ --concerns(X,Y), sg ).
 tv( run, runs, ran,
-	run, running, X^Y^ --runs(X,Y) ).
+	run, running, X^Y^ --runs(X,Y), sg ).
 
 rov( want, wants, wanted,
 	 wanted, wanting,
