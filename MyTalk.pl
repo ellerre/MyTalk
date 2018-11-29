@@ -286,6 +286,7 @@ np(NP, nogap, Num) -->
 		det(N2^NP, Num), n(N1, Num, det), optrel(N1^N2).
 np(NP, nogap, Num) --> pn(NP, Num).
 np(NP, nogap, Num) --> n(NP, Num, nodet).
+np(NP, nogap, Num) --> n((NP^S)^S, Num, nodet).
 np((X^S)^S, gap(np, X), _) --> [].
 
 

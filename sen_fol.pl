@@ -13,8 +13,8 @@
 
 %% Utilities to create verbal forms on-the-fly.
 create_iv(Word, X^ --Term):- Term =.. [Word, X].
-create_tv_unary(Word, X^ --Term):- Term =.. [Word, X].
-create_tv_binary(Word, X^Y^ --Term):- Term =.. [Word, X, Y].
+create_tv_unary(Word, X^Y^ --Term):- Term =.. [Word, X, Y].
+create_tv_binary(Word, X^Y^Z^ --Term):- Term =.. [Word, X, Y, Z].
 
 
 %% Verbal FOL dynamically created
