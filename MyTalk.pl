@@ -297,6 +297,10 @@ vp(Form, X^S, GapInfo, Num) -->
 	tv(Form, X^VP, Num),
 	np(VP^S, GapInfo, _).
 
+vp(Form, X^S, GapInfo, Num) -->
+	tv(Form, X^VP, Num),
+	np(VP^S, GapInfo, _).	
+
 vp(Form, VP, nogap, Num) -->
 	iv(Form, VP, Num).
 
@@ -334,7 +338,7 @@ optrel((X^S1)^(X^(S1&S2))) -->
 	relpron, vp(finite,X^S2, nogap, _).
 
 optrel((X^S1)^(X^(S1&S2))) -->
-	relpron, s(S2, gap(np, X), _).
+	relpron, s(S2, gap(np, X)).
 	optrel(N^N) --> [].
 
 
@@ -411,7 +415,7 @@ whpron( whom ).
 whpron( what ).
 
 det( every, (X^S1)^(X^S2)^ all(X,S1=>S2), sg ).
-det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ). %only for is-a statements
+det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), pl ).
 
