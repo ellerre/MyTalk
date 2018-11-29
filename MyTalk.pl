@@ -9,14 +9,14 @@
 :- op(500,xfy,&).
 :- op(510,xfy,=>).
 :- op(100,fx,--).
+
 :- ensure_loaded('./dcgcompiler.pl').
-
-
-%%%%%%%%%%
 :- ensure_loaded('./Pronto_Morphological/pronto_morph_engine.pl').
 :- ensure_loaded('./wn_s.pl').
+:- ensure_loaded('./wn_fr.pl').
+:- ensure_loaded('./sen_fol.pl').
+
 :- dynamic n/2.
-%%%%%%%%%%
 
 
 /*=====================================================
@@ -283,9 +283,9 @@ sinv(S, GapInfo) -->
 
 %%% 				Noun Phrases
 np(NP, nogap, Num) -->
-		det(N2^NP, Num), n(N1, Num), optrel(N1^N2).
+		det(N2^NP, Num), n(N1, Num, det), optrel(N1^N2).
 np(NP, nogap, Num) --> pn(NP, Num).
-np(NP, nogap, Num) --> n(NP, Num).
+np(NP, nogap, Num) --> n(NP, Num, nodet).
 np((X^S)^S, gap(np, X), _) --> [].
 
 
@@ -313,10 +313,18 @@ vp(Form2, VP2, GapInfo, Num) -->
 	np(NP, nogap, Num),
 	vp(Form1, VP1, GapInfo, Num).
 
+%% Verb =to be=
+vp(finite, X^S, GapInfo, sg) -->
+	[am],
+	np((X^P)^exists(X,S&P), GapInfo, sg).
+
 vp(finite, X^S, GapInfo, sg) -->
 	[is],
-	np((X^P)^exists(X,S&P), GapInfo, _).
+	np((X^P)^exists(X,S&P), GapInfo, sg).
 
+vp(finite, X^S, GapInfo, pl) -->
+	[are],
+	np((X^P)^exists(X,S&P), GapInfo, pl).
 
 
 %%% 				Relative Clauses
@@ -329,25 +337,26 @@ optrel((X^S1)^(X^(S1&S2))) -->
 	optrel(N^N) --> [].
 
 
-
-
 /*=====================================================
 					Dictionary
 =====================================================*/
 
 /*-----------------------------------------------------
-Preterminals
+				   Preterminals
 -----------------------------------------------------*/
 
 det(LF, Num) --> [D], {det(D, LF, Num)}.
-n(LF, Num) --> [N], {n(N, LF, Num)}.
+
+
+n(LF, Num, det) --> [N], {n(N, LF, Num)}.
+n((E^S)^S, Num, nodet) --> [N], {n(N, E, Num)}.
+
 pn((E^S)^S, Num) --> [PN], {pn(PN, E, Num)}.
 aux(Form, LF) --> [Aux], {aux(Aux, Form, LF)}.
 relpron --> [RP], {relpron(RP)}.
 whpron --> [WH], {whpron(WH)}.
 
-
-% Verb entry arguments:
+% Verb entry arguments: //TO UPDATE
 %	1. nonfinite form of the verb
 % 	2. third person singular present tense form of the verb
 %	3. past tense form of the verb
@@ -356,16 +365,25 @@ whpron --> [WH], {whpron(WH)}.
 % 	6. logical form of the verb
 
 
-iv(nonfinite, LF, Num) --> [IV], {iv(IV, _, _, _, _, LF, Num)}.
-iv(finite, LF, Num) --> [IV], {iv(_, IV, _, _, _, LF, Num)}.
-iv(finite, LF, Num) --> [IV], {iv(_, _, IV, _, _, LF, Num)}.
-iv(past_participle, LF, Num) --> [IV], {iv(_, _, _, IV, _, LF, Num)}.
-iv(pres_participle, LF, Num) --> [IV], {iv(_, _, _, _, IV, LF, Num)}.
-tv(nonfinite, LF, Num) --> [TV], {tv(TV, _, _, _, _, LF, Num)}.
-tv(finite, LF, Num) --> [TV], {tv(_, TV, _, _, _, LF, Num)}.
-tv(finite, LF, Num) --> [TV], {tv(_, _, TV, _, _, LF, Num)}.
-tv(past_participle, LF, Num) --> [TV], {tv(_, _, _, TV, _, LF, Num)}.
-tv(pres_participle, LF, Num) --> [TV], {tv(_, _, _, _, TV, LF, Num)}.
+iv(nonfinite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(R, _, _, _, _, _, _, _, LF, Num)}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(R, _, _, _, _, _, _, _, LF, Num)}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, R, _, _, _, _, _, _, LF, Num)}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, R, _, _, _, _, _, LF, Num)}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, R, _, _, _, _, LF, Num)}.
+iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, R, _, _, _, LF, Num)}.
+iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, R, _, _, LF, Num)}.
+iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, _, R, _, LF, Num)}.
+iv(pres_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, _, _, R, LF, Num)}.
+
+tv(nonfinite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(R, _, _, _, _, _, _, _, LF, Num)}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(R, _, _, _, _, _, _, _, LF, Num)}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, R, _, _, _, _, _, _, LF, Num)}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, R, _, _, _, _, _, LF, Num)}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, R, _, _, _, _, LF, Num)}.
+tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, R, _, _, _, LF, Num)}.
+tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, R, _, _, LF, Num)}.
+tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, _, R, _, LF, Num)}.
+tv(pres_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, _, _, R, LF, Num)}.
 
 rov(nonfinite /Requires, LF)
 		--> [ROV], {rov(ROV, _, _, _, _, LF, Requires)}.
@@ -377,7 +395,6 @@ rov(past_participle/Requires, LF)
 		--> [ROV], {rov(_, _, _, ROV, _, LF, Requires)}.
 rov(pres_participle/Requires, LF)
 		--> [ROV], {rov(_, _, _, _, ROV, LF, Requires)}.
-
 
 
 /*-----------------------------------------------------
@@ -393,7 +410,7 @@ whpron( whom ).
 whpron( what ).
 
 det( every, (X^S1)^(X^S2)^ all(X,S1=>S2), sg ).
-det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
+det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ). %only for is-a statements
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), pl ).
 
@@ -434,17 +451,32 @@ pn( principia, principia, sg ).
 pn( shrdlu, shrdlu, sg ).
 pn( terry, terry, sg ).
 
-iv( halt, halts, halted,
-	halted, halting, X^ --halt(X), sg ).
 
-tv( write, writes, wrote,
-	written, writing, X^Y^ --writes(X,Y), sg ).
-tv( meet, meets, met,
-	met, meeting, X^Y^ --meets(X,Y), sg ).
-tv( concern, concerns, concerned,
-	concerned, concerning, X^Y^ --concerns(X,Y), sg ).
-tv( run, runs, ran,
-	run, running, X^Y^ --runs(X,Y), sg ).
+iv( [[W]], [[W, -s]], [[W, -ed]], [[W, -past]],
+	[[W, -ed]], [[W, -en]], 
+	[[W, -past]], [[W, -ing]], FOL, sg):- s(SysID,W_Num,W,v,_,_), 
+										  fr(SysID, FR, W_Num), 
+										  sen_fol_iv(FR, W, FOL).
+
+iv( [[W]], [[W]], [[W, -ed]], [[W, -past]],
+	[[W, -ed]], [[W, -en]],
+	 [[W, -past]], [[W, -ing]], FOL, pl):- s(SysID,W_Num,W,v,_,_), 
+										   fr(SysID, FR, W_Num), 
+										   sen_fol_iv(FR, W, FOL).
+
+
+tv( [[W]], [[W, -s]], [[W, -ed]], [[W, -past]],
+	[[W, -ed]], [[W, -en]], 
+	[[W, -past]], [[W, -ing]], FOL, sg):- s(SysID,W_Num,W,v,_,_), 
+										  fr(SysID, FR, W_Num), 
+										  sen_fol_tv(FR, W, FOL).
+
+tv( [[W]], [[W]], [[W, -ed]], [[W, -past]],
+	[[W, -ed]], [[W, -en]], 
+	[[W, -past]], [[W, -ing]], FOL, pl):- s(SysID,W_Num,W,v,_,_), 
+										  fr(SysID, FR, W_Num), 
+										  sen_fol_tv(FR, W, FOL).
+
 
 rov( want, wants, wanted,
 	 wanted, wanting,
@@ -461,7 +493,7 @@ aux( did, 	finite/nonfinite, 		VP^ VP 		).
 
 
 /*=====================================================
-				Auxiliary Predicates
+				Auxiliary Predicates                   
 =====================================================*/
 
 %%% conc(List1, List2, List)
@@ -527,7 +559,7 @@ read_word(Char, [Char|Chars], Last) :-
 %%% space(Char)
 %%% ===========
 %%%
-%%% 	Char ==> the ASCII code for the space
+%%% 	Char === the ASCII code for the space
 %%% 			 character
 
 space(32).
