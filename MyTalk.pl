@@ -512,7 +512,7 @@ pn( shrdlu, shrdlu, sg ).
 pn( terry, terry, sg ).
 
 
-iv( [[W]], [[W, -s]], [[W, -ed]], [[W, -past]],
+iv( no, [[W, -s]], [[W, -ed]], [[W, -past]],
 	[[W, -ed]], [[W, -en]], 
 	[[W, -past]], [[W, -ing]], FOL, sg):- s(SysID,W_Num,W,v,_,_), 
 										  fr(SysID, FR, W_Num), 
@@ -525,7 +525,7 @@ iv( [[W]], no, [[W, -ed]], [[W, -past]],
 										   sen_fol_iv(FR, W, FOL).
 
 
-tv( [[W]], [[W, -s]], [[W, -ed]], [[W, -past]],
+tv( no, [[W, -s]], [[W, -ed]], [[W, -past]],
 	[[W, -ed]], [[W, -en]], 
 	[[W, -past]], [[W, -ing]], FOL, sg):- s(SysID,W_Num,W,v,_,_), 
 										  fr(SysID, FR, W_Num), 
