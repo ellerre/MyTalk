@@ -18,13 +18,13 @@ create_tv_binary(Word, X^Y^Z^ --Term):- Term =.. [Word, X, Y, Z].
 
 
 %% Verbal FOL dynamically created
-sen_fol_iv(1, Word, FOL):- atom_concat(Word, s, V), create_iv(Word, FOL). 				%iv
-sen_fol_iv(2, Word, FOL):- atom_concat(Word, s, V), create_iv(Word, FOL).				%iv 
-sen_fol_tv(8, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).	%tv
-sen_fol_tv(9, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).	%tv
-sen_fol_tv(10, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).	%tv
-sen_fol_tv(11, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).	%tv
-sen_fol_tv(14, Word, FOL):- atom_concat(Word, s, V), create_tv_binary(V, FOL).	%tv
+sen_fol_iv(1, Word, FOL):- atom_concat(Word, s, V), create_iv(Word, FOL).			%iv
+sen_fol_iv(2, Word, FOL):- atom_concat(Word, s, V), create_iv(Word, FOL). 			%iv 
+sen_fol_tv(8, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).		%tv
+sen_fol_tv(9, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).		%tv
+sen_fol_tv(10, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).		%tv
+sen_fol_tv(11, Word, FOL):-	atom_concat(Word, s, V), create_tv_unary(V, FOL).		%tv
+sen_fol_tv(14, Word, FOL):- atom_concat(Word, s, V), create_tv_binary(V, FOL).		%tv
 
 
 %sen( 3,'It is ','ing.'). 								

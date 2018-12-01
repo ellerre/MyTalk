@@ -250,6 +250,15 @@ clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 clausify_literal( Rest , Still), 
 						 !.
 
+clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
+						 Interm =.. [^,B,Interm2], 
+						 Interm2 =.. [--, Interm3], 
+						 Interm3 =.. [Z , B],
+						 Rest = [Var],
+						 \+ var(Var),
+						 clausify_compound( Rest , Still), 
+						 !.						 
+
 clausify_compound(L , [Z | Rest]):- L =.. [_ , Interm | Rest],
 						 Interm =.. [^,B,Interm2], 
 						 Interm2 =.. [--, Interm3], 
@@ -320,7 +329,7 @@ q(S => --answer(yes)) -->
 
 s(S, GapInfo) -->
 		np(VP^S, nogap, Num),
-		vp(finite, VP, GapInfo, Num).
+		vp(finite, VP, GapInfo, Num), {!}.
 
 
 %%% 				Inverted Sentences
@@ -346,10 +355,6 @@ np((X^S)^S, gap(np, X), _) --> [].
 vp(Form, X^S, GapInfo, Num) -->
 	tv(Form, X^VP, Num),
 	np(VP^S, GapInfo, _).
-
-vp(Form, X^S, GapInfo, Num) -->
-	tv(Form, X^VP, Num),
-	np(VP^S, GapInfo, _).	
 
 vp(Form, VP, nogap, Num) -->
 	iv(Form, VP, Num).
@@ -420,25 +425,25 @@ whpron --> [WH], {whpron(WH)}.
 % 	6. logical form of the verb
 
 
-iv(nonfinite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(R, _, _, _, _, _, _, _, LF, Num)}.
-iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(R, _, _, _, _, _, _, _, LF, Num)}.
-iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, R, _, _, _, _, _, _, LF, Num)}.
-iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, R, _, _, _, _, _, LF, Num)}.
-iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, R, _, _, _, _, LF, Num)}.
-iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, R, _, _, _, LF, Num)}.
-iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, R, _, _, LF, Num)}.
-iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, _, R, _, LF, Num)}.
-iv(pres_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, _, _, R, LF, Num)}.
+iv(nonfinite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(R, _, _, _, _, _, _, _, LF, Num), !}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(R, _, _, _, _, _, _, _, LF, Num), !}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, R, _, _, _, _, _, _, LF, Num), !}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, R, _, _, _, _, _, LF, Num), !}.
+iv(finite, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, R, _, _, _, _, LF, Num), !}.
+iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, R, _, _, _, LF, Num), !}.
+iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, R, _, _, LF, Num), !}.
+iv(past_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, _, R, _, LF, Num), !}.
+iv(pres_participle, LF, Num) --> [IV], {morph_atoms(IV, R), iv(_, _, _, _, _, _, _, R, LF, Num), !}.
 
-tv(nonfinite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(R, _, _, _, _, _, _, _, LF, Num)}.
-tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(R, _, _, _, _, _, _, _, LF, Num)}.
-tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, R, _, _, _, _, _, _, LF, Num)}.
-tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, R, _, _, _, _, _, LF, Num)}.
-tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, R, _, _, _, _, LF, Num)}.
-tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, R, _, _, _, LF, Num)}.
-tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, R, _, _, LF, Num)}.
-tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, _, R, _, LF, Num)}.
-tv(pres_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, _, _, R, LF, Num)}.
+tv(nonfinite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(R, _, _, _, _, _, _, _, LF, Num), !}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(R, _, _, _, _, _, _, _, LF, Num), !}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, R, _, _, _, _, _, _, LF, Num), !}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, R, _, _, _, _, _, LF, Num), !}.
+tv(finite, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, R, _, _, _, _, LF, Num), !}.
+tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, R, _, _, _, LF, Num), !}.
+tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, R, _, _, LF, Num), !}.
+tv(past_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, _, R, _, LF, Num), !}.
+tv(pres_participle, LF, Num) --> [TV], {morph_atoms(TV, R), tv(_, _, _, _, _, _, _, R, LF, Num), !}.
 
 rov(nonfinite /Requires, LF)
 		--> [ROV], {rov(ROV, _, _, _, _, LF, Requires)}.
@@ -513,7 +518,7 @@ iv( [[W]], [[W, -s]], [[W, -ed]], [[W, -past]],
 										  fr(SysID, FR, W_Num), 
 										  sen_fol_iv(FR, W, FOL).
 
-iv( [[W]], [[W]], [[W, -ed]], [[W, -past]],
+iv( [[W]], no, [[W, -ed]], [[W, -past]],
 	[[W, -ed]], [[W, -en]],
 	 [[W, -past]], [[W, -ing]], FOL, pl):- s(SysID,W_Num,W,v,_,_), 
 										   fr(SysID, FR, W_Num), 
@@ -526,7 +531,7 @@ tv( [[W]], [[W, -s]], [[W, -ed]], [[W, -past]],
 										  fr(SysID, FR, W_Num), 
 										  sen_fol_tv(FR, W, FOL).
 
-tv( [[W]], [[W]], [[W, -ed]], [[W, -past]],
+tv( [[W]], no, [[W, -ed]], [[W, -past]],
 	[[W, -ed]], [[W, -en]], 
 	[[W, -past]], [[W, -ing]], FOL, pl):- s(SysID,W_Num,W,v,_,_), 
 										  fr(SysID, FR, W_Num), 
