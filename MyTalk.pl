@@ -42,9 +42,11 @@ main_loop :-
 talk(Sentence, Reply) :-
 	% parse the sentence
 	parse(Sentence, LF, Type),
+	
 	% convert the FOL logical form into a Horn
 	% clause, if possible
 	clausify(LF, Clause, FreeVars), !,
+	
 	% concoct a reply, based on the clause and
 	% whether sentence was a query or assertion
 	reply(Type, FreeVars, Clause, Reply).
@@ -165,15 +167,25 @@ clausify(all(X,F0),F,[X|V]) :- clausify(F0,F,V).
 % 				antecedent is clausified specially.
 clausify(A0=>C0,(C:-A),V) :-
 	clausify_literal(C0,C),
-	clausify_antecedent(A0,A,V).
+	clausify_antecedent(A0,A,V).	
 
 % Literals: left unchanged (except literal
 % 			marker is removed).
 clausify(C0,C,[]) :- clausify_literal(C0,C).
 
+
+%% IMPORTANT NOTE
 % Note that conjunctions and existentials are
 % disallowed, since they can't form Horn clauses.
+% An example of resulting clauses can be obtained
+% removing the comments above, or below:
 
+%	clausify(exists(X,F0),F,[X|V]) :-
+%		clausify_antecedent(F0,F,V).
+
+%	clausify(A0=>C0,(C:-A),V) :-
+%			clausify_antecedent(C0, C, _),
+%			clausify_antecedent(A0,A,V).	
 
 
 %%% clausify_antecedent(FOL, Clause, FreeVars)
@@ -196,7 +208,8 @@ clausify_antecedent(E0&F0,(E,F),V) :-
 
 % Existentials: variable is left implicitly scoped.
 clausify_antecedent(exists(X,F0),F,[X|V]) :-
-clausify_antecedent(F0,F,V).
+	clausify_antecedent(F0,F,V).
+
 
 
 %%% clausify_literal(Literal, Clause)
@@ -205,10 +218,47 @@ clausify_antecedent(F0,F,V).
 %%% 	Literal ==> FOL literal to be converted
 %%% 				to clause form
 %%% 	Clause <== clause form of FOL expression
-% Literal is left unchanged (except literal
-% marker is removed).
-clausify_literal(--L,L).
+% If compound, clausifies the internal structure
+% and then builds a clause composing external and
+% internal  FOL.   Otherwise,  literal  is  left
+% unchanged (except literal  marker is removed).
 
+clausify_literal(--L, Z):- 
+	L =.. [External | Arg], 		% Tries to decompose
+	Arg = [Var | _],
+	\+ var(Var),					% check if compound
+	clausify_compound(L, Internal), 
+	Z =.. [External | Internal], !.
+
+clausify_literal(--L, Z):- 
+	L=.. [External, Var | Rest],	% Starts with a variable
+	clausify_compound(Rest, Res),
+	Z =.. [External, Var | Res].
+
+clausify_literal([[]], []).			% End recursion
+
+clausify_compound([Var | Rest], [Var | Still]):- var(Var),  %a variable, actually
+						clausify_literal( [Rest], Still),
+						!.
+
+clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
+						 Interm =.. [^,B,Interm2], 
+						 Interm2 =.. [--, Interm3], 
+						 Interm3 =.. [Z , B],
+						 Rest = [Var],
+						 \+ var(Var),
+						 clausify_literal( Rest , Still), 
+						 !.
+
+clausify_compound(L , [Z | Rest]):- L =.. [_ , Interm | Rest],
+						 Interm =.. [^,B,Interm2], 
+						 Interm2 =.. [--, Interm3], 
+						 Interm3 =.. [Z , B].
+						 %manage Rest and parse it. It can be a variable - just to add 
+						 %or another thing to be clausified (in this case, recursively call)
+						 %this same clause.
+
+clausify_compound([], []).
 
 /*=====================================================
 						Grammar
@@ -283,7 +333,7 @@ sinv(S, GapInfo) -->
 
 %%% 				Noun Phrases
 np(NP, nogap, Num) -->
-		det(N2^NP, Num), n(N1, Num, det), optrel(N1^N2).
+		det(N2^NP, Num), n(N1, Num, det), optrel(N1^N2), {!}.
 np(NP, nogap, Num) --> pn(NP, Num).
 np(NP, nogap, Num) --> n(NP, Num, nodet).
 np(NP, nogap, Num) --> n((NP^S)^S, Num, nodet).
@@ -419,7 +469,7 @@ det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), pl ).
 
-n(Word, Q, Num):- word(Word, Num, W), create_n(W, Q), assert(n( W, Q)).
+n(Word, Q, Num):- word(Word, Num, W), create_n(W, Q), assert(n( W, Q)), !.
 create_n(W, X^ --Term):- Term =.. [W, X].
  
 word(Word, pl, W) :-
