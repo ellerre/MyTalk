@@ -49,7 +49,8 @@ talk(Sentence, Reply) :-
 	
 	% concoct a reply, based on the clause and
 	% whether sentence was a query or assertion
-	reply(Type, FreeVars, Clause, Reply).
+	catch(reply(Type, FreeVars, Clause, Reply),
+		 _, write('Can\'t answer: some logical passage is missing! ')).
 
 
 % No parse was found, sentence is too difficult.
@@ -74,16 +75,34 @@ talk(_Sentence, error('too difficult')).
 %%% 	the clause to the database.
 
 % Replying to a query.
+
 reply(query, FreeVars,
 		(answer(Answer):-Condition), Reply) :-
 	% find all the answers that satisfy the query,
 	% replying with that set if it exists, or "no"
 	% or "none" if it doesn't.
-	(setof(Answer, FreeVars^Condition, Answers)
-		-> Reply = answer(Answers)
+	(setof(Answer, FreeVars^Condition, Answers),
+		expand_answers(Answer, FreeVars, Answers, ExtendedAnswers)
+		-> Reply = answer(ExtendedAnswers)
 		; (Answer = []
 			-> Reply = answer([none])
 			; Reply = answer([no]))), !.
+
+%% The following is used in case of a recursive reply.
+%	Eg. if the response is a common name, I check if there
+% 	are responses to common_name(X), otherwise I return it 
+% 	as an atom.
+
+expand_answers(_, _, [],[]).
+
+expand_answers(Answer, FreeVars, [First | Rest], [NewResp|Still]):- 
+	current_predicate((First)/1), !, 
+	Pred =.. [First, X],
+	setof(X, FreeVars^Pred, NewResp),
+	expand_answers(Answer, FreeVars, Rest, Still).
+
+expand_answers(Answer, FreeVars, [First | Rest], [First | Resp]):- 
+	expand_answers(Answer, FreeVars, Rest, Resp).
 
 
 % Replying to an assertion.
@@ -144,7 +163,7 @@ parse(Sentence, LF, assertion) :-
 
 % Parsing a query: a question.
 parse(Sentence, LF, query) :-
-	q(LF, Sentence, []).
+	q(LF, Sentence, []), !.
 
 
 
@@ -196,6 +215,9 @@ clausify(C0,C,[]) :- clausify_literal(C0,C).
 %%% 	Clause <== clause form of FOL expression
 %%% 	FreeVars ==> list of free variables in clause
 
+% Variables: it is not a FOL to be converted, so fail
+clausify_antecedent(Var, _, _):- var(Var), !, fail.
+
 % Literals: left unchanged (except literal
 % 			marker is removed).
 clausify_antecedent(L0,L,[]) :- clausify_literal(L0,L).
@@ -240,6 +262,9 @@ clausify_literal([[]], []).			% End recursion
 clausify_compound([Var | Rest], [Var | Still]):- var(Var),  %a variable, actually
 						clausify_literal( [Rest], Still),
 						!.
+clausify_compound([Atom | Rest], [Atom | Still]):- atom(Atom),  %an atom, actually
+						clausify_literal( [Rest], Still),
+						!.						
 
 clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 Interm =.. [^,B,Interm2], 
@@ -247,6 +272,7 @@ clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 Interm3 =.. [Z , B],
 						 Rest = [Var],
 						 \+ var(Var),
+						 \+ atom(Var),
 						 clausify_literal( Rest , Still), 
 						 !.
 
@@ -256,6 +282,7 @@ clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 Interm3 =.. [Z , B],
 						 Rest = [Var],
 						 \+ var(Var),
+						 \+ atom(Var),
 						 clausify_compound( Rest , Still), 
 						 !.						 
 
