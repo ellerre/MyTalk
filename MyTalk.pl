@@ -1,5 +1,5 @@
 /******************************************************
-					TALK Program
+					MyTALK Program
 ******************************************************/
 
 /*=====================================================
@@ -12,9 +12,9 @@
 
 :- ensure_loaded('./dcgcompiler.pl').
 :- ensure_loaded('./Pronto_Morphological/pronto_morph_engine.pl').
-:- ensure_loaded('./wn_s.pl').
-:- ensure_loaded('./wn_fr.pl').
-:- ensure_loaded('./sen_fol.pl').
+:- ensure_loaded('./wordnet/wn_s.pl').
+:- ensure_loaded('./wordnet/wn_fr.pl').
+:- ensure_loaded('./wordnet/sen_fol.pl').
 
 :- dynamic n/2.
 
@@ -501,7 +501,7 @@ det( a, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), sg ).
 det( some, (X^S1)^(X^S2)^exists(X,S1&S2), pl ).
 
-n(Word, Q, Num):- word(Word, Num, W), create_n(W, Q), assert(n( W, Q)), !.
+n(Word, Q, Num):- word(Word, Num, W), create_n(W, Q), assert(n(W, Q)), !.
 create_n(W, X^ --Term):- Term =.. [W, X].
  
 word(Word, pl, W) :-
