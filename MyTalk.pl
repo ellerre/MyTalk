@@ -1,5 +1,26 @@
 /******************************************************
 					MyTALK Program
+
+This  program  is  an  extension  of  the Talk program 
+presented  in  (Pereira and Shieber, 1987).  The  main 
+improvements are that:
+ - a  morphological  analysis  is performed, so not to 
+ 	write into the code any possible form of any pos-
+ 	sible word.
+ - integration with WordNet allows to handle any common
+ 	name and (theoretically) any verb. For verb treat-
+ 	ment, see *sen_fol.pl*.
+ - a basic syntactic analysis is performed, allowing
+ 	to check the concordance in number between subject 
+ 	and its verb.
+ - transformation  in  clauses  is much more powerful,
+ 	since it allows to handle a significant number of
+ 	LFs if compared to Talk.
+
+However, all the limits of Talk are still present.
+Finally, this program is extremely inefficient, and
+could be easily improved (such as in the verbal part)
+
 ******************************************************/
 
 /*=====================================================
@@ -14,7 +35,8 @@
 :- ensure_loaded('./Pronto_Morphological/pronto_morph_engine.pl').
 :- ensure_loaded('./wordnet/wn_s.pl').
 :- ensure_loaded('./wordnet/wn_fr.pl').
-:- ensure_loaded('./wordnet/sen_fol.pl').
+:- ensure_loaded('./sen_fol.pl').
+:- ensure_loaded('./ontology/ontology.pl').
 
 :- dynamic n/2.
 
@@ -50,7 +72,7 @@ talk(Sentence, Reply) :-
 	% concoct a reply, based on the clause and
 	% whether sentence was a query or assertion
 	catch(reply(Type, FreeVars, Clause, Reply),
-		 _, write('Can\'t answer: some logical passage is missing! ')).
+		 _, write('Can\'t answer: too difficult or some logical passage is missing! ')).
 
 
 % No parse was found, sentence is too difficult.
@@ -82,12 +104,35 @@ reply(query, FreeVars,
 	% replying with that set if it exists, or "no"
 	% or "none" if it doesn't.
 	(setof(Answer, FreeVars^Condition, Answers),
-		expand_answers(Answer, FreeVars, Answers, ExtendedAnswers)
+	expand_answers(Answer, FreeVars, Answers, ExtendedAnswers)
 		-> Reply = answer(ExtendedAnswers)
 		; (Answer = []
 			-> Reply = answer([none])
 			; Reply = answer([no]))), !.
 
+
+% Replying to an assertion.
+
+reply(assertion, _FreeVars,
+	  Assertion, asserted(Assertion)) :-
+
+	  %% Here we insert the semantic control.
+	  check_consistency(Assertion), !,
+
+	% assert the assertion and tell user what we asserted
+	% before, we check if the assertion already existed.
+	  do_assertion(Assertion).
+
+% Replying to some other type of sentence.
+reply(_Type, _FreeVars, _Clause, error('Statement semantically inconsistent')).
+
+
+do_assertion(Assertion):-	  
+	retract(Assertion) 
+		->	assert(Assertion)
+		; 	assert(Assertion), !.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The following is used in case of a recursive reply.
 %	Eg. if the response is a common name, I check if there
 % 	are responses to common_name(X), otherwise I return it 
@@ -103,17 +148,19 @@ expand_answers(Answer, FreeVars, [First | Rest], [NewResp|Still]):-
 
 expand_answers(Answer, FreeVars, [First | Rest], [First | Resp]):- 
 	expand_answers(Answer, FreeVars, Rest, Resp).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+check_consistency(Assertion):-					% Check consistency of proper nouns
+	Assertion =.. [ Head, Name | _],
+	pn(Name, Name, sg, Kind),
+	consistent(Head, Kind).
 
 
-% Replying to an assertion.
-reply(assertion, _FreeVars,
-	  Assertion, asserted(Assertion)) :-
-	% assert the assertion and tell user what we asserted
-	assert(Assertion), !.
-
-% Replying to some other type of sentence.
-reply(_Type, _FreeVars, _Clause, error('unknown type')).
-
+check_consistency(Assertion):-					% Not interested in other cases
+	Assertion =.. [ Head, Name | _],
+	\+ pn(Name, Name, sg, Kind).
 
 
 %%% print_reply(Reply)
@@ -266,6 +313,17 @@ clausify_compound([Atom | Rest], [Atom | Still]):- atom(Atom),  %an atom, actual
 						clausify_literal( [Rest], Still),
 						!.						
 
+
+clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
+						 Interm =.. [^,B,Interm2], 
+						 Interm2 =.. [--, Interm3], 
+						 Interm3 =.. [Z , B],
+						 Rest = [Var],
+						 \+ var(Var),
+						 Var == [],
+						 clausify_literal( Rest , Still), 
+						 !.
+
 clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 Interm =.. [^,B,Interm2], 
 						 Interm2 =.. [--, Interm3], 
@@ -275,6 +333,16 @@ clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 \+ atom(Var),
 						 clausify_literal( Rest , Still), 
 						 !.
+
+clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
+						 Interm =.. [^,B,Interm2], 
+						 Interm2 =.. [--, Interm3], 
+						 Interm3 =.. [Z , B],
+						 Rest = [Var],
+						 \+ var(Var),
+						 Var == [],
+						 clausify_compound( Rest , Still), 
+						 !.	
 
 clausify_compound(L , [Z | Still]):- L =.. [ _ , Interm | Rest],
 						 Interm =.. [^,B,Interm2], 
@@ -438,7 +506,7 @@ det(LF, Num) --> [D], {det(D, LF, Num)}.
 n(LF, Num, det) --> [N], {n(N, LF, Num)}.
 n((E^S)^S, Num, nodet) --> [N], {n(N, E, Num)}.
 
-pn((E^S)^S, Num) --> [PN], {pn(PN, E, Num)}.
+pn((E^S)^S, Num) --> [PN], {pn(PN, E, Num, _)}.
 aux(Form, LF) --> [Aux], {aux(Aux, Form, LF)}.
 relpron --> [RP], {relpron(RP)}.
 whpron --> [WH], {whpron(WH)}.
@@ -529,14 +597,13 @@ word(Word, sg, W) :-
    ;
    fail.
 
-pn( begriffsschrift, begriffsschrift, sg ).
-pn( bertrand, bertrand, sg ).
-pn( bill, bill, sg ).
-pn( gottlob, gottlob, sg ).
-pn( lunar, lunar, sg ).
-pn( principia, principia, sg ).
-pn( shrdlu, shrdlu, sg ).
-pn( terry, terry, sg ).
+pn( bertrand, bertrand, sg, man).
+pn( bill, bill, sg, woman ).
+pn( gottlob, gottlob, sg, man ).
+pn( firework, firework, sg, song).
+pn( principia, principia, sg, book ).
+pn( shrdlu, shrdlu, sg, program ).
+pn( terry, terry, sg, woman ).
 
 
 iv( no, [[W, -s]], [[W, -ed]], [[W, -past]],
