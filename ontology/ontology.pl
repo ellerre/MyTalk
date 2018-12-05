@@ -19,8 +19,10 @@
 	followed by the suffix _demo.
 	We hope that in the future someone will take care
 	of a really working integration with WN.	
-*
-******************************************************/
+
+There is also a problem with the transitivity of the isa
+relationship that I was not able to solve.	
+*******************************************************/
 
 :- ensure_loaded('./wordnet_demo/wn_hyp_demo.pl').
 :- ensure_loaded('./wordnet_demo/wn_s_demo.pl').

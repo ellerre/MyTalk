@@ -17,11 +17,20 @@ improvements are that:
  	since it allows to handle a significant number of
  	LFs if compared to Talk.
 
+ - ATTENTION. The predicate "Reply", in "assertion"
+ 	mode, has active a demo of a semantic analysis.
+ 	Since it is quite constraining on the proper 
+ 	noun, my advice is to comment the predicate
+ 	'check_consistency' until you are not sufficiently
+ 	confident.
+
 However, all the limits of Talk are still present.
 Finally, this program is extremely inefficient, and
 could be easily improved (such as in the verbal part)
 
 ******************************************************/
+
+
 
 /*=====================================================
 					Operators
@@ -32,7 +41,7 @@ could be easily improved (such as in the verbal part)
 :- op(100,fx,--).
 
 :- ensure_loaded('./dcgcompiler.pl').
-:- ensure_loaded('./Pronto_Morphological/pronto_morph_engine.pl').
+:- ensure_loaded('./morphological_parser/pronto_morph_engine.pl').
 :- ensure_loaded('./wordnet/wn_s.pl').
 :- ensure_loaded('./wordnet/wn_fr.pl').
 :- ensure_loaded('./sen_fol.pl').
@@ -124,16 +133,22 @@ reply(assertion, _FreeVars,
 	  do_assertion(Assertion).
 
 % Replying to some other type of sentence.
+
 reply(_Type, _FreeVars, _Clause, error('Statement semantically inconsistent')).
 
 
+%%%% Reply utilities
+%%%% ========================================
+
+%%% DO ASSERTION
 do_assertion(Assertion):-	  
 	retract(Assertion) 
 		->	assert(Assertion)
 		; 	assert(Assertion), !.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The following is used in case of a recursive reply.
+
+%%%% EXPAND ANSWER
+% The following is used in case of a recursive reply.
 %	Eg. if the response is a common name, I check if there
 % 	are responses to common_name(X), otherwise I return it 
 % 	as an atom.
@@ -148,9 +163,14 @@ expand_answers(Answer, FreeVars, [First | Rest], [NewResp|Still]):-
 
 expand_answers(Answer, FreeVars, [First | Rest], [First | Resp]):- 
 	expand_answers(Answer, FreeVars, Rest, Resp).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% CHECK CONSISTENCY
+%
+%	This is the demo of the integration with a 
+%	semantic analyser.
+%
+%
 
 check_consistency(Assertion):-					% Check consistency of proper nouns
 	Assertion =.. [ Head, Name | _],
@@ -161,6 +181,7 @@ check_consistency(Assertion):-					% Check consistency of proper nouns
 check_consistency(Assertion):-					% Not interested in other cases
 	Assertion =.. [ Head, Name | _],
 	\+ pn(Name, Name, sg, Kind).
+
 
 
 %%% print_reply(Reply)
@@ -211,6 +232,13 @@ parse(Sentence, LF, assertion) :-
 % Parsing a query: a question.
 parse(Sentence, LF, query) :-
 	q(LF, Sentence, []), !.
+
+
+
+
+
+
+
 
 
 
@@ -363,6 +391,19 @@ clausify_compound(L , [Z | Rest]):- L =.. [_ , Interm | Rest],
 						 %this same clause.
 
 clausify_compound([], []).
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*=====================================================
 						Grammar
