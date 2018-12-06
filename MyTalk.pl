@@ -173,15 +173,18 @@ expand_answers(Answer, FreeVars, [First | Rest], [First | Resp]):-
 %
 
 check_consistency(Assertion):-					% Check consistency of proper nouns
-	Assertion =.. [ Head, Name | _],
+	Assertion =.. [ Head, Name ],
 	pn(Name, Name, sg, Kind),
 	consistent(Head, Kind).
 
 
 check_consistency(Assertion):-					% Not interested in other cases
-	Assertion =.. [ Head, Name | _],
+	Assertion =.. [ Head, Name ],
 	\+ pn(Name, Name, sg, Kind).
 
+check_consistency(Assertion):-					% Not interested in other cases
+	Assertion =.. [ Head, _ | T ],
+	T \== [].
 
 
 %%% print_reply(Reply)
