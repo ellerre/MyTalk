@@ -5,7 +5,7 @@
 %	gence Centre, University of Georgia, 1-18.  
 %
 %	You can find that source file at 
-						http://ai1.ai.uga.edu/mc/pronto/
+%						http://ai1.ai.uga.edu/mc/pronto/
 %
 %	I translated only the forms requiring noun arguments
 % 	(or no arguments at all). The translation of all the
