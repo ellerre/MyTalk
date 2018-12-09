@@ -23,12 +23,11 @@ The access to WordNet is partially inspired to the files defined by the WordNet 
 
 Fundamental reading to understand and extend this work are:
 <ul>
-<li>Pereira, F. C., & Shieber, S. M. (1987). <i>Prolog and natural-language analysis<\i>. Microtome Publishing. 
-  In particolare, è fondamentale la lettura del capitolo 4.</li>
+<li>Pereira, F. C., & Shieber, S. M. (1987). <i>Prolog and natural-language analysis</i>. Microtome Publishing.</li>
 
-<li>Blackburn, P., & Bos, J. (2005). Representation and inference for natural language. <i>A first course in computational semantics. CSLI<\i>.</li>
+<li>Blackburn, P., & Bos, J. (2005). Representation and inference for natural language. <i>A first course in computational semantics.</i> CSLI.</li>
 
-<li>Miller, G. A. (1995). WordNet: a lexical database for English. <i>Communications of the ACM<\i>, 38(11), 39-41.</li>
+<li>Miller, G. A. (1995). WordNet: a lexical database for English. <i>Communications of the ACM</i>, 38(11), 39-41.</li>
 
 <li>Ribeiro, C. et al. (2004). INQUER: A WordNet-based Question-Answering Application. In LREC.</li>
 
