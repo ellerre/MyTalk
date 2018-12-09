@@ -10,9 +10,9 @@ improvements are that:
  - integration with WordNet allows to handle any common
  	name and (theoretically) any verb. For verb treat-
  	ment, see *sen_fol.pl*.
- - a basic syntactic analysis is performed, allowing
- 	to check the concordance in number between subject 
- 	and its verb.
+ - a  basic  morphosyntactic  analysis  is  performed, 
+   allowing to check the concordance in number between 
+   the subject and its verb.
  - transformation  in  clauses  is much more powerful,
  	since it allows to handle a significant number of
  	LFs if compared to Talk.
@@ -24,7 +24,7 @@ improvements are that:
  	'check_consistency' until you are not sufficiently
  	confident.
 
-However, all the limits of Talk are still present.
+However, all the other limits of Talk are still present.
 Finally, this program is extremely inefficient, and
 could be easily improved (such as in the verbal part)
 
@@ -134,8 +134,8 @@ reply(assertion, _FreeVars,
 
 % Replying to some other type of sentence.
 
-reply(_Type, _FreeVars, _Clause, error('Statement semantically inconsistent')).
-
+reply(assertion, _FreeVars, _Clause, error('Statement semantically inconsistent')).
+reply(query, _FreeVars, _Clause, error('unknown type')).
 
 %%%% Reply utilities
 %%%% ========================================
