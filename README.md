@@ -32,10 +32,10 @@ Fundamental reading to understand and extend this work are:
 <li>Ribeiro, C. et al. (2004). INQUER: A WordNet-based Question-Answering Application. In LREC.</li>
 
 <li>ProNTo, Prolog Natural Language Tools (http://ai1.ai.uga.edu/mc/pronto/).</li>
-
+</ul>
  
 ### How to use MyTalk
 
-This program was tested using SWI-Prolog (http://www.swi-prolog.org/) , both versions 5.2.13 and 7.6.4. If you find any bug or want furhter information about this program, feel free to send me an e-mail.
+This program was tested using SWI-Prolog (http://www.swi-prolog.org/), both versions 5.2.13 and 7.6.4. If you find any bug or want furhter information about this program, feel free to send me an e-mail.
 
-The entry-point of the program is the file <i>myTalk.pl<\i>: open it with SWI-Prolog or consult it from the current environment. Type the predicate <i>main_loop.<\i>: the user interface is the same of the orginal Talk program.
+The entry-point of the program is the file <i>myTalk.pl</i>: open it with SWI-Prolog or consult it from the current environment. Type the predicate <i>main_loop.</i>: the user interface is the same of the orginal Talk program.
