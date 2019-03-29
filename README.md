@@ -21,7 +21,7 @@ The access to WordNet is partially inspired to the files defined by the WordNet 
 
 ### References
 
-Fundamental reading to understand and extend this work are:
+Fundamental readings to understand and extend this work are:
 <ul>
 <li>Pereira, F. C., & Shieber, S. M. (1987). <i>Prolog and natural-language analysis</i>. Microtome Publishing.</li>
 
