@@ -36,6 +36,6 @@ Fundamental readings to understand and extend this work are:
  
 ### How to use MyTalk
 
-This program was tested using SWI-Prolog (http://www.swi-prolog.org/), both versions 5.2.13 and 7.6.4. If you find any bug or want furhter information about this program, feel free to send me an e-mail.
+This program was tested using SWI-Prolog (http://www.swi-prolog.org/), both versions 5.2.13 and 7.6.4. If you find any bug or want further information about this program, feel free to send me an e-mail.
 
 The entry-point of the program is the file <i>myTalk.pl</i>: open it with SWI-Prolog or consult it from the current environment. Type the predicate <i>main_loop.</i>: the user interface is the same of the orginal Talk program.
